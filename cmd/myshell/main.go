@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
@@ -24,11 +25,9 @@ func main() {
 			os.Exit(0)
 		}
 
-		for _, v := range defaultCommands {
-			if v == strippedCommand {
-				fmt.Println("Do the Command")
-				continue
-			}
+		if slices.Contains(defaultCommands, strippedCommand) {
+			fmt.Println(strippedCommand)
+			continue
 		}
 
 		fmt.Println(strippedCommand + ": command not found")
