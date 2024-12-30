@@ -20,8 +20,7 @@ func main() {
 		}
 
 		strippedCommand := command[:len(command)-1]
-		if strippedCommand == "exit" {
-			fmt.Println("Exiting")
+		if strippedCommand == "exit 0" {
 			os.Exit(0)
 		}
 
