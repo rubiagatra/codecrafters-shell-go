@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 )
 
 func main() {
-	defaultCommands := []string{"ls"}
+	defaultCommands := []string{"echo"}
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 
@@ -19,17 +20,17 @@ func main() {
 			os.Exit(1)
 		}
 
-		strippedCommand := command[:len(command)-1]
-		if strippedCommand == "exit 0" {
+		strippedCommand := strings.Split(command[:len(command)-1], " ")
+		if strippedCommand[0] == "exit" && strippedCommand[1] == "0" {
 			os.Exit(0)
 		}
 
-		if slices.Contains(defaultCommands, strippedCommand) {
-			fmt.Println(strippedCommand)
+		if slices.Contains(defaultCommands, strippedCommand[0]) {
+			fmt.Println(strings.Join(strippedCommand[1:], " "))
 			continue
 		}
 
-		fmt.Println(strippedCommand + ": command not found")
+		fmt.Println(strippedCommand[0] + ": command not found")
 	}
 
 }
