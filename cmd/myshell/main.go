@@ -5,32 +5,38 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
 func main() {
-	defaultCommands := []string{"echo"}
+	builtIns := []string{"echo", "type", "exit"}
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
-
-		// Wait for user input
-		command, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		message, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input: ", err)
 			os.Exit(1)
 		}
+		message = strings.TrimSpace(message)
+		commands := strings.Split(message, " ")
+		switch commands[0] {
+		case "exit":
+			code, err := strconv.Atoi(commands[1])
+			if err != nil {
+				os.Exit(1)
+			}
+			os.Exit(code)
+		case "echo":
+			fmt.Fprintf(os.Stdout, "%s\n", strings.Join(commands[1:], " "))
+		case "type":
+			if slices.Contains(builtIns, commands[1]) {
+				fmt.Fprintf(os.Stdout, "%s %s\n", strings.Join(commands[1:], " "), "is a shell builtin")
+				continue
+			}
 
-		strippedCommand := strings.Split(command[:len(command)-1], " ")
-		if strippedCommand[0] == "exit" && strippedCommand[1] == "0" {
-			os.Exit(0)
+			fmt.Fprintf(os.Stdout, "%s: not found\n", commands[1])
+		default:
+			fmt.Fprintf(os.Stdout, "%s: command not found\n", message)
 		}
-
-		if slices.Contains(defaultCommands, strippedCommand[0]) {
-			fmt.Println(strings.Join(strippedCommand[1:], " "))
-			continue
-		}
-
-		fmt.Println(strippedCommand[0] + ": command not found")
 	}
-
 }
