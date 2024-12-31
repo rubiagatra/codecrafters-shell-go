@@ -4,13 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	builtIns := []string{"echo", "type", "exit"}
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		message, err := bufio.NewReader(os.Stdin).ReadString('\n')
@@ -29,12 +27,30 @@ func main() {
 		case "echo":
 			fmt.Fprintf(os.Stdout, "%s\n", strings.Join(commands[1:], " "))
 		case "type":
-			if slices.Contains(builtIns, commands[1]) {
-				fmt.Fprintf(os.Stdout, "%s %s\n", strings.Join(commands[1:], " "), "is a shell builtin")
-				continue
+			found := false
+			switch commands[1] {
+			case "exit", "echo", "type":
+				fmt.Printf("%s is a shell builtin\n", commands[1])
+			default:
+				paths := strings.Split(os.Getenv("PATH"), ":")
+				for _, path := range paths {
+					entries, _ := os.ReadDir(path)
+					for _, file := range entries {
+						if file.Name() == commands[1] {
+							fmt.Printf("%s is %s/%s\n", commands[1], path, commands[1])
+							found = true
+							break
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if !found {
+					fmt.Fprintf(os.Stdout, "%s: not found\n", commands[1])
+				}
 			}
 
-			fmt.Fprintf(os.Stdout, "%s: not found\n", commands[1])
 		default:
 			fmt.Fprintf(os.Stdout, "%s: command not found\n", message)
 		}
