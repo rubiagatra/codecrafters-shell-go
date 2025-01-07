@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -17,6 +18,7 @@ func main() {
 		}
 		message = strings.TrimSpace(message)
 		commands := strings.Split(message, " ")
+
 		switch commands[0] {
 		case "exit":
 			code, err := strconv.Atoi(commands[1])
@@ -34,16 +36,10 @@ func main() {
 			default:
 				paths := strings.Split(os.Getenv("PATH"), ":")
 				for _, path := range paths {
-					entries, _ := os.ReadDir(path)
-					for _, file := range entries {
-						if file.Name() == commands[1] {
-							fmt.Printf("%s is %s/%s\n", commands[1], path, commands[1])
-							found = true
-							break
-						}
-					}
-					if found {
-						break
+					exec := path + "/" + commands[1]
+					if _, err := os.Stat(exec); err == nil {
+						fmt.Fprintf(os.Stdout, "%v is %v\n", commands[1], exec)
+						found = true
 					}
 				}
 				if !found {
@@ -52,7 +48,21 @@ func main() {
 			}
 
 		default:
-			fmt.Fprintf(os.Stdout, "%s: command not found\n", message)
+			found := false
+			paths := strings.Split(os.Getenv("PATH"), ":")
+			for _, path := range paths {
+				execPath := path + "/" + commands[0]
+				cmd := exec.Command(execPath, commands[1:]...)
+				out, _ := cmd.CombinedOutput()
+				if err == nil && len(out) != 0 {
+					fmt.Fprintf(os.Stdout, "%s", out)
+					found = true
+				}
+			}
+
+			if !found {
+				fmt.Fprintf(os.Stdout, "%s: command not found\n", message)
+			}
 		}
 	}
 }
