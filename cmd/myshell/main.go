@@ -31,10 +31,16 @@ func main() {
 		case "pwd":
 			cwd, _ := os.Getwd()
 			fmt.Fprintf(os.Stdout, "%s\n", cwd)
+		case "cd":
+			err = os.Chdir(commands[1])
+			if err != nil {
+				fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", commands[1])
+			}
+
 		case "type":
 			found := false
 			switch commands[1] {
-			case "exit", "echo", "type", "pwd":
+			case "exit", "echo", "type", "pwd", "cd":
 				fmt.Printf("%s is a shell builtin\n", commands[1])
 			default:
 				paths := strings.Split(os.Getenv("PATH"), ":")
