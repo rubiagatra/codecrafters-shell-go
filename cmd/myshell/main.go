@@ -32,9 +32,23 @@ func main() {
 			cwd, _ := os.Getwd()
 			fmt.Fprintf(os.Stdout, "%s\n", cwd)
 		case "cd":
-			err = os.Chdir(commands[1])
-			if err != nil {
-				fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", commands[1])
+			if len(commands) == 1 {
+				commands = append(commands, "~")
+			}
+
+			switch commands[1] {
+			case "~":
+				home := os.Getenv("HOME")
+				err = os.Chdir(home)
+				if err != nil {
+					fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", commands[1])
+				}
+			default:
+				err = os.Chdir(commands[1])
+				if err != nil {
+					fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", commands[1])
+				}
+
 			}
 
 		case "type":
